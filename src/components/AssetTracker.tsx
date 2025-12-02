@@ -3,7 +3,7 @@ import type { FormEvent, ChangeEvent } from 'react';
 import type { AssetData, AssetResults } from '../interfaces/AssetInterfaces';
 
 
-const API_URL = 'http://localhost:8001'
+const API_URL = 'https://finasset.yanlongzhu.space/'
 
 const initialAssetData: AssetData = {
     gold_g: 0,
