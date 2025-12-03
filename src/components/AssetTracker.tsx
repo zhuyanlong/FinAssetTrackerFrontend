@@ -193,7 +193,7 @@ const AssetTracker = () => {
                     { results && (
                         <div className="result" style={{ marginTop: '20px', fontWeight: 'bold' }}>
                             <h2>计算结果(美元)</h2>
-                            <p>可用流动性: {results.total_savings_usd ? results.total_savings_usd : 0}</p>
+                            <p>可用流动性: {results.total_savings_usd ? results.total_savings_usd.toFixed(2) : 0}</p>
                             <p>可用流动性占总资产比例: {results.available_liquidity_ratio? results.available_liquidity_ratio : 0 }</p>
                             <p>黄金占总资产比例: {results.gold_ratio ? results.gold_ratio: 0}</p>
                             <p>比特币占总资产比例: {results.btc_ratio ? results.btc_ratio: 0}</p>
