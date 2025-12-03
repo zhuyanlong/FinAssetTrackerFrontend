@@ -62,11 +62,42 @@ const AssetTracker = () => {
     const [assetData, setAssetData] = useState<AssetData>(initialAssetData);
     const [results, setResults] = useState<AssetResults | null>(null);
 
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        
+        const fetchInitialData = async () => {
+            try {
+                const response = await fetch(API_URL + '/')
+
+                if (response.status == 404) {
+                    setAssetData(initialAssetData);
+                    setResults(null);
+                    setError(null);
+                    return;
+                }   
+
+                if (!response.ok) {
+                    throw new Error(`Failed to load data: ${response.status}`)
+                }
+
+                const initialSnapshot = await response.json();
+
+                const dataToForm: Partial<AssetData> = {};
+                for (const key in initialAssetData) {
+                    if (initialSnapshot.hasOwnProperty(key)) {
+                        dataToForm[key as keyof AssetData] = initialSnapshot[key];
+                    }
+                }
+                setAssetData({ ...initialAssetData, ...dataToForm as AssetData });
+            } catch (err) {
+                setError(`无法加载初始数据: ${err instanceof Error ? err.message: '连接错误'}`);
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchInitialData();
     }, []);
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -128,49 +159,56 @@ const AssetTracker = () => {
     return (
         <div style={{ fontFamily: 'Arial, sans-serif', margin: '40px' }}>
             <h1>资产统计器</h1>
-            <button onClick={handleClearData} style={{ padding: '10px 20px', marginBottom: '20px' }}>
-                清除所有数据
-            </button>
 
-            {error && <p style={{ color: 'red', fontWidth: 'bold'}}>错误: {error}</p>}
+            {loading && <h2>加载中...请稍后</h2>}
 
-            <form onSubmit={handleSubmit} id="assetForm">
-                {formFields.map(field => (
-                    <div className="form-group" key={field.name} style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'inline-block', width: '20px' }}>{field.label}</label>
-                        <input
-                            type="number"
-                            step={field.step}
-                            name={field.name}
-                            value={assetData[field.name]}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </div>
-                ))}
+            {!loading && (
+                <>
+                    <button onClick={handleClearData} style={{ padding: '10px 20px', marginBottom: '20px' }}>
+                        清除所有数据
+                    </button>
 
-                <button type="submit" disabled={loading} style={{padding: '10px 20px', marginTop: '10px'}}>
-                    {loading ? '计算中...' : '计算总资产'}
-                </button>
-            </form>
+                    {error && <p style={{ color: 'red', fontWidth: 'bold'}}>错误: {error}</p>}
 
-            { results && (
-                <div className="result" style={{ marginTop: '20px', fontWeight: 'bold' }}>
-                    <h2>计算结果(美元)</h2>
-                    <p>可用流动性: {results.total_savings_usd ? results.total_savings_usd.toFixed(2) : 'N/A'}</p>
-                    <p>可用流动性占总资产比例: {results.available_liquidity_ratio? results.available_liquidity_ratio.toFixed(2) : 'N/A' }</p>
-                    <p>黄金占总资产比例: {results.gold_ratio ? results.gold_ratio.toFixed(2): 'N/A'}</p>
-                    <p>比特币占总资产比例: {results.btc_ratio ? results.btc_ratio.toFixed(2): 'N/A'}</p>
-                    <h3>总资产: {results.total_assets_usd ? results.total_assets_usd.toFixed(2): 'N/A'}</h3>
+                    <form onSubmit={handleSubmit} id="assetForm">
+                        {formFields.map(field => (
+                            <div className="form-group" key={field.name} style={{ marginBottom: '15px' }}>
+                                <label style={{ display: 'inline-block', width: '20px' }}>{field.label}</label>
+                                <input
+                                    type="number"
+                                    step={field.step}
+                                    name={field.name}
+                                    value={assetData[field.name]}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+                        ))}
 
-                    {results.report_path && (
-                        <div className="download-section">
-                            <a href={`{API_URL}/download_report/${results.report_path.split('/').pop()}`} target="_blank" rel="noopener noreferrer">
-                                Download Report
-                            </a>
+                        <button type="submit" disabled={loading} style={{padding: '10px 20px', marginTop: '10px'}}>
+                            {loading ? '计算中...' : '计算总资产'}
+                        </button>
+                    </form>
+
+                    { results && (
+                        <div className="result" style={{ marginTop: '20px', fontWeight: 'bold' }}>
+                            <h2>计算结果(美元)</h2>
+                            <p>可用流动性: {results.total_savings_usd ? results.total_savings_usd.toFixed(2) : 'N/A'}</p>
+                            <p>可用流动性占总资产比例: {results.available_liquidity_ratio? results.available_liquidity_ratio.toFixed(2) : 'N/A' }</p>
+                            <p>黄金占总资产比例: {results.gold_ratio ? results.gold_ratio.toFixed(2): 'N/A'}</p>
+                            <p>比特币占总资产比例: {results.btc_ratio ? results.btc_ratio.toFixed(2): 'N/A'}</p>
+                            <h3>总资产: {results.total_assets_usd ? results.total_assets_usd.toFixed(2): 'N/A'}</h3>
+
+                            {results.report_path && (
+                                <div className="download-section">
+                                    <a href={`{API_URL}/download_report/${results.report_path.split('/').pop()}`} target="_blank" rel="noopener noreferrer">
+                                        Download Report
+                                    </a>
+                                </div>
+                            )}
                         </div>
                     )}
-                </div>
+                </>
             )}
         </div>
     );
