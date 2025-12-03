@@ -195,9 +195,9 @@ const AssetTracker = () => {
                             <h2>计算结果(美元)</h2>
                             <p>可用流动性: {results.total_savings_usd ? parseFloat(results.total_savings_usd as unknown as string).toFixed(2) : '0.00' }</p>
                             <p>可用流动性占总资产比例: {results.available_liquidity_ratio ? parseFloat(results.available_liquidity_ratio as unknown as string).toFixed(2) : '0.00' }</p>
-                            <p>黄金占总资产比例: {results.gold_ratio ? parseFloat(results.gold_ratio as unknown as string): '0.00' }</p>
-                            <p>比特币占总资产比例: {results.btc_ratio ? parseFloat(results.btc_ratio as unknown as string): '0.00'}</p>
-                            <h3>总资产: {results.total_assets_usd ? parseFloat(results.total_assets_usd as unknown as string): '0.00'}</h3>
+                            <p>黄金占总资产比例: {results.gold_ratio ? parseFloat(results.gold_ratio as unknown as string).toFixed(2): '0.00' }</p>
+                            <p>比特币占总资产比例: {results.btc_ratio ? parseFloat(results.btc_ratio as unknown as string).toFixed(2): '0.00'}</p>
+                            <h3>总资产: {results.total_assets_usd ? parseFloat(results.total_assets_usd as unknown as string).toFixed(2): '0.00'}</h3>
 
                             {results.report_path && (
                                 <div className="download-section">
