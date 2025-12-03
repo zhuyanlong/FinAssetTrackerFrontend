@@ -3,7 +3,7 @@ import type { FormEvent, ChangeEvent } from 'react';
 import type { AssetData, AssetResults } from '../interfaces/AssetInterfaces';
 
 
-const API_URL = 'https://finasset.yanlongzhu.space/'
+const API_URL = 'https://finasset.yanlongzhu.space'
 
 const initialAssetData: AssetData = {
     gold_g: 0,
@@ -116,7 +116,7 @@ const AssetTracker = () => {
         setResults(null);
 
         try {
-            const response = await fetch(API_URL, {
+            const response = await fetch(API_URL + '/update_assets', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(assetData),
