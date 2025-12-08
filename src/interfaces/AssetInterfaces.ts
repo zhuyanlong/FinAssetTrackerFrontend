@@ -31,6 +31,8 @@ export interface AssetResults {
     available_liquidity_ratio: number;
     gold_ratio: number;
     btc_ratio: number;
+    weighted_risk_score: number;
+    speculative_ratio: number;
     report_path?: string;
     message?: string;
 }

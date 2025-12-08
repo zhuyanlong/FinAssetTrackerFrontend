@@ -197,6 +197,8 @@ const AssetTracker = () => {
                             <p>可用流动性占总资产比例: {results.available_liquidity_ratio ? parseFloat(results.available_liquidity_ratio as unknown as string).toFixed(2) : '0.00' }</p>
                             <p>黄金占总资产比例: {results.gold_ratio ? parseFloat(results.gold_ratio as unknown as string).toFixed(2): '0.00' }</p>
                             <p>比特币占总资产比例: {results.btc_ratio ? parseFloat(results.btc_ratio as unknown as string).toFixed(2): '0.00'}</p>
+                            <p>整体风险分: {results.weighted_risk_score ? parseFloat(results.weighted_risk_score as unknown as string).toFixed(2): '0.00'}</p>
+                            <p>投机/高波动资产占比: {results.speculative_ratio ? parseFloat(results.speculative_ratio as unknown as string).toFixed(2): '0.00'}</p>
                             <h3>总资产: {results.total_assets_usd ? parseFloat(results.total_assets_usd as unknown as string).toFixed(2): '0.00'}</h3>
 
                             {results.report_path && (
