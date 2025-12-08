@@ -54,7 +54,7 @@ const formFields: FormField[] = [
     { name: 'deposit_gbp', label: '存款(英镑/元)', step: '0.01' },
     { name: 'btc', label: '比特币(个)', step: '0.00000001' },
     { name: 'btc_stock_usd', label: '比特币股票(美元/元)', step: '0.01' },
-    { name: 'stock_usd', label: '股票(英镑/元)', step: '0.01' },
+    { name: 'stock_usd', label: '股票(美元/元)', step: '0.01' },
     { name: 'savings_usd', label: '储蓄(美元/元)', step: '0.01' },
 ]
 
@@ -201,7 +201,7 @@ const AssetTracker = () => {
 
                             {results.report_path && (
                                 <div className="download-section">
-                                    <a href={`{API_URL}/download_report/${results.report_path.split('/').pop()}`} target="_blank" rel="noopener noreferrer">
+                                    <a href={`${API_URL}/download_report/${results.report_path.split('/').pop()}`} target="_blank" rel="noopener noreferrer">
                                         Download Report
                                     </a>
                                 </div>
