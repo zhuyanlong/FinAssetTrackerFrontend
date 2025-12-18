@@ -229,8 +229,17 @@ const AssetTracker = () => {
 
                     <form onSubmit={handleSubmit} id="assetForm">
                         {formFields.map(field => (
-                            <div className="form-group" key={field.name} style={{ marginBottom: '15px' }}>
-                                <label style={{ display: 'inline-block', width: '20px' }}>{field.label}</label>
+                            <div className="form-group" key={field.name} style={{ 
+                                marginBottom: '15px', 
+                                display: 'flex',
+                                alignItems: 'center',
+                                maxWidth: '500px'
+                            }}>
+                                <label style={{ 
+                                    width: '180px',
+                                    marginRight: '10px',
+                                    textAlign: 'right'
+                                }}>{field.label}</label>
                                 <input
                                     type="number"
                                     step={field.step}
@@ -238,6 +247,10 @@ const AssetTracker = () => {
                                     value={assetData[field.name]}
                                     onChange={handleInputChange}
                                     required
+                                    style={{
+                                        flex: 1,
+                                        padding: '5px'
+                                    }}
                                 />
                             </div>
                         ))}
