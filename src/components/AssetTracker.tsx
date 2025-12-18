@@ -86,6 +86,7 @@ const AssetTracker = () => {
     const [currentSimAction, setCurrentSimAction] = useState<SimulationAction>({field: 'savings_cny', delta: 0});
     const [simResult, setSimResult] = useState<SimulationResponse | null>(null);
     const [simLoading, setSimLoading] = useState<boolean>(false);
+    const [simDeltaInput, setSimDeltaInput] = useState<string>("")
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -179,9 +180,10 @@ const AssetTracker = () => {
     };
 
     const addSimAction = () => {
-        if (currentSimAction.delta === 0) return;
+        if (simDeltaInput === "" || simDeltaInput === "-") return;
         setSimActions([...simActions, { ...currentSimAction }]);
         setCurrentSimAction({ ...currentSimAction, delta: 0 });
+        setSimDeltaInput("");
     };
 
     const removeSimAction = (index: number) => {
@@ -279,7 +281,17 @@ const AssetTracker = () => {
                                 type="number"
                                 placeholder="变化量(可为负)"
                                 value={currentSimAction.delta}
-                                onChange={(e) => setCurrentSimAction({...currentSimAction, delta: parseFloat(e.target.value) || 0})}
+                                onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === "" || val === "-" || !isNaN(Number(val))) {
+                                            setSimDeltaInput(val);
+                                            setCurrentSimAction({
+                                                ...currentSimAction, 
+                                                delta: parseFloat(e.target.value) || 0
+                                            });
+                                        }
+                                    } 
+                                }
                                 style={{ padding: '8px' }}
                             />
                             <button onClick={addSimAction} style={{ backgroundColor: '#2196F3', color: 'white', border: 'none', borderRadius: '4px', padding: '8px 15px' }}>
