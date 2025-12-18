@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import type { AssetData, AssetResults } from '../interfaces/AssetInterfaces';
 
-
 const API_URL = 'https://finasset.yanlongzhu.space'
 
 const initialAssetData: AssetData = {
@@ -38,6 +37,24 @@ interface FormField {
     step: string;
 }
 
+interface SimulationAction {
+    field: keyof AssetData;
+    delta: number;
+}
+
+interface SimulationResponse {
+    original: AssetResults;
+    simulated: AssetResults;
+    diff_summary: {
+        total_assets: string;
+        risk_score: string;
+        liquidity: string;
+        // btc_ratio: string;
+        agent_verdict: string;
+        agent_advice: string;
+    }
+}
+
 const formFields: FormField[] = [
     { name: 'gold_g', label: '黄金(g)', step: '0.01' },
     { name: 'gold_oz', label: '黄金(oz)', step: '0.01' },
@@ -64,6 +81,11 @@ const AssetTracker = () => {
 
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [simActions, setSimActions] = useState<SimulationAction[]>([]);
+    const [currentSimAction, setCurrentSimAction] = useState<SimulationAction>({field: 'savings_cny', delta: 0});
+    const [simResult, setSimResult] = useState<SimulationResponse | null>(null);
+    const [simLoading, setSimLoading] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -156,8 +178,43 @@ const AssetTracker = () => {
         }
     };
 
+    const addSimAction = () => {
+        if (currentSimAction.delta === 0) return;
+        setSimActions([...simActions, { ...currentSimAction }]);
+        setCurrentSimAction({ ...currentSimAction, delta: 0 });
+    };
+
+    const removeSimAction = (index: number) => {
+        setSimActions(simActions.filter((_, i) => i !== index));
+    };
+
+    const handleRunSimulation = async () => {
+        if (simActions.length === 0) return;
+        setSimLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch(API_URL + '/simulate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    actions: simActions,
+                    notes: "User Sandbox Decision"
+                }),
+            });
+
+            if (!response.ok) throw new Error('模型请求失败');
+            const data = await response.json() as SimulationResponse;
+            setSimResult(data);
+        } catch (err) {
+            setError(`模拟失败 ${err instanceof Error ? err.message : '未知错误'}`)
+        } finally {
+            setSimLoading(false);
+        }
+    };
+
     return (
-        <div style={{ fontFamily: 'Arial, sans-serif', margin: '40px' }}>
+        <div style={{ fontFamily: 'Arial, sans-serif', margin: '40px', maxWidth: '800px' }}>
             <h1>资产统计器</h1>
 
             {loading && <h2>加载中...请稍后</h2>}
@@ -189,6 +246,77 @@ const AssetTracker = () => {
                             {loading ? '计算中...' : '计算总资产'}
                         </button>
                     </form>
+
+                    <hr style={{ margin: '40px 0' }} />
+                    <div style={{ backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
+                        <h2>决策模拟沙盒</h2>
+                        <p style={{ fontSize: '14px', color: '#666' }}>
+                            模拟资金变动情况
+                        </p>
+
+                        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                            <select
+                                value={currentSimAction.field}
+                                onChange={(e) => setCurrentSimAction({...currentSimAction, field: e.target.value as keyof AssetData})}
+                                style={{ padding: '8px' }}
+                            >
+                                {formFields.map(f => <option key={f.name} value={f.name}>{f.label}</option>)}
+                            </select>
+                            <input
+                                type="number"
+                                placeholder="变化量(可为负)"
+                                value={currentSimAction.delta}
+                                onChange={(e) => setCurrentSimAction({...currentSimAction, delta: parseFloat(e.target.value) || 0})}
+                                style={{ padding: '8px' }}
+                            />
+                            <button onClick={addSimAction} style={{ backgroundColor: '#2196F3', color: 'white', border: 'none', borderRadius: '4px', padding: '8px 15px' }}>
+                                添加动作
+                            </button>
+                        </div>
+
+                        {simActions.length > 0 && (
+                            <div style={{ marginBottom: '20px' }}>
+                                <h4>待执行变更:</h4>
+                                <ul>
+                                    {simActions.map((action, idx) => (
+                                        <li key={idx}>
+                                            {formFields.find(f => f.name === action.field)?.label}:
+                                            <span style={{ color: action.delta >= 0 ? 'green': 'red', fontWeight: 'bold' }}>
+                                                {action.delta >= 0 ? `+${action.delta}`: action.delta}
+                                            </span>
+                                            <button onClick={() => removeSimAction(idx)} style={{ marginLeft: '10px', cursor: 'pointer' }}>删除</button>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <button
+                                    onClick={handleRunSimulation}
+                                    disabled={simLoading}
+                                    style={{ padding: '10px 20px', backgroundColor: '#4CAF50', color: 'white', borderRadius: '4px', fontWeight: 'bold' }}
+                                >
+                                    {simLoading ? '分析中...' : '开始模拟'}
+                                </button>
+                                <button onClick={() => {setSimActions([]); setSimResult(null);}} style={{ marginLeft: '10px' }}>重置沙盒</button>
+                            </div>
+                        )}
+
+                        {simResult && (
+                            <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#fff', borderLeft: '5px solid #4CAF50' }}>
+                                <h3 style={{ color: '#2e7d32' }}>模拟分析结果</h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                    <div>
+                                        <p>结论: <strong>{simResult.diff_summary.agent_verdict.toUpperCase()}</strong></p>
+                                        <p>总资产变动: {simResult.diff_summary.total_assets}</p>
+                                        <p>风险分变动: {simResult.diff_summary.risk_score}</p>
+                                        <p>流动性变动: {simResult.diff_summary.liquidity}</p>
+                                    </div>
+                                    <div style={{ backgroundColor: '#f0f4f0', padding: '10px', borderRadius: '4px' }}>
+                                        <p><strong>AI 决策建议:</strong></p>
+                                        <p style={{ fontSize: '14px', fontStyle: 'italic' }}>{simResult.diff_summary.agent_advice}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     { results && (
                         <div className="result" style={{ marginTop: '20px', fontWeight: 'bold' }}>
