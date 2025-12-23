@@ -278,19 +278,18 @@ const AssetTracker = () => {
                                 {formFields.map(f => <option key={f.name} value={f.name}>{f.label}</option>)}
                             </select>
                             <input
-                                type="number"
+                                type="text"
                                 placeholder="变化量(可为负)"
-                                value={currentSimAction.delta}
+                                value={simDeltaInput}
                                 onChange={(e) => {
-                                        const val = e.target.value;
-                                        if (val === "" || val === "-" || !isNaN(Number(val))) {
-                                            setSimDeltaInput(val);
-                                            setCurrentSimAction({
-                                                ...currentSimAction, 
-                                                delta: parseFloat(e.target.value) || 0
-                                            });
-                                        }
-                                    } 
+                                    const val = e.target.value;
+                                    if (val === "" || val === "-" || !isNaN(Number(val))) {
+                                        setSimDeltaInput(val);
+                                        setCurrentSimAction({
+                                            ...currentSimAction, 
+                                            delta: parseFloat(val) || 0
+                                        });
+                                    }} 
                                 }
                                 style={{ padding: '8px' }}
                             />
